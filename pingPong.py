@@ -31,12 +31,11 @@ window = turtle.Screen()
 window.title("Ping-Pong")
 window.setup(width=1.0, height=0.99)
 window.bgcolor("black")
-window.tracer(1)
+window.tracer(1.5)
 
 # Отрисовка задней части поля
-border = turtle.Turtle()
+border = turtle.Turtle(visible=False)
 border.speed(0)
-border.hideturtle()
 border.color('green')
 border.begin_fill()
 border.goto(-LENGTH/2, WIDTH/2)
@@ -100,6 +99,23 @@ ball.penup()
 ball.dx = choice([-4,-3,-2, 2,3,4]) # ск-ть перемещения мячика по x
 ball.dy = choice([-4,-3,-2, 2,3,4]) # ск-ть перемещения мячика по y
 
+# Счет игроков
+FONT = ("Arial", 44) # шрифт
+# Левый игрок
+score_left  = 0
+Point_left  = turtle.Turtle(visible=False)
+Point_left.color("white")
+Point_left.penup()
+Point_left.setposition(-LENGTH/5, WIDTH/2)
+Point_left.write(score_left, font=FONT)
+# Правый игрок
+score_right = 0
+Point_right = turtle.Turtle(visible=False)
+Point_right.color("white")
+Point_right.penup()
+Point_right.setposition(LENGTH/5, WIDTH/2)
+Point_right.write(score_right, font=FONT)
+
 # Движение левой ракетки вверх
 def left_move_up():
     y = rocket_left.ycor() + VELOCITY
@@ -138,8 +154,12 @@ while True:
     window.update()
     
     # Перемещение мячика
-    ball.setx(ball.xcor() + ball.dx)
-    ball.sety(ball.ycor() + ball.dy)
+    try:
+        ball.setx(ball.xcor() + ball.dx)
+        ball.sety(ball.ycor() + ball.dy)
+    except Exception:
+        print("Game has been aborted")
+        exit()
     
     # Отражение от верхней и нижней стенок
     if ball.ycor() >= (WIDTH/2 - DIAMETER/2):
@@ -147,25 +167,46 @@ while True:
     elif ball.ycor() <= (-WIDTH/2 + DIAMETER/2):
         ball.dy = -ball.dy
     
-    # При достижении левой или правой стенки возвращаемся в центр
-    if (ball.xcor() <= (-LENGTH/2 + DIAMETER/2)) or \
-            (ball.xcor() >= (LENGTH/2 - DIAMETER/2)):
-        ball.goto(0, randint(-WIDTH/4, WIDTH/4))
-        ball.dx = choice([-4,-3,-2, 2,3,4])
-        ball.dy = choice([-4,-3,-2, 2,3,4])
-    
-    # Отражение от левой ракетки
-    if (ball.ycor() >= rocket_left.ycor()-ROCKET_WIDTH/2) and \
-            (ball.ycor() <= rocket_left.ycor()+ROCKET_WIDTH/2) and \
-            (ball.xcor() >= rocket_left.xcor()-ROCKET_LENGTH/2) and \
-            (ball.xcor() <= rocket_left.xcor()+ROCKET_LENGTH/2):
-        ball.dx = - ball.dx
-    
-    # Отражение от правой ракетки
-    if (ball.ycor() >= rocket_right.ycor()-ROCKET_WIDTH/2) and \
-            (ball.ycor() <= rocket_right.ycor()+ROCKET_WIDTH/2) and \
-            (ball.xcor() >= rocket_right.xcor()-ROCKET_LENGTH/2) and \
-            (ball.xcor() <= rocket_right.xcor()+ROCKET_LENGTH/2):
-        ball.dx = - ball.dx
+    # Если мячик в левой половине
+    if ball.xcor() < 0:   
+        # Отражение от лицевой стороны левой ракетки
+        if (ball.ycor() >= rocket_left.ycor()-ROCKET_WIDTH/2) and \
+                (ball.ycor() <= rocket_left.ycor()+ROCKET_WIDTH/2) and \
+                (ball.xcor() <= rocket_left.xcor()+ROCKET_LENGTH/2+DIAMETER/2):
+            ball.dx = -ball.dx
+        # Достижение левой стенки
+        if ball.xcor() <= (-LENGTH/2 + DIAMETER/2):
+            ball.dx = choice([-4,-3,-2, 2,3,4])
+            ball.dy = choice([-4,-3,-2, 2,3,4])
+            score_right += 1
+            Point_right.clear()
+            Point_right.write(score_right, font=FONT)
+            if score_right == 7:
+                ball.goto(0, 0)
+                print("Player B win")
+                print("Gameover")
+                break
+            ball.goto(0, randint(-WIDTH/4, WIDTH/4))
+    # Если мячик в правой половине
+    else:
+        # Отражение от лицевой стороны правой ракетки
+        if (ball.ycor() >= rocket_right.ycor()-ROCKET_WIDTH/2) and \
+                (ball.ycor() <= rocket_right.ycor()+ROCKET_WIDTH/2) and \
+                (ball.xcor() >= rocket_right.xcor()-\
+                ROCKET_LENGTH/2-DIAMETER/2):
+                ball.dx = -ball.dx
+        # Достижение правой стенки
+        if ball.xcor() >= (LENGTH/2 - DIAMETER/2):
+            ball.dx = choice([-4,-3,-2, 2,3,4])
+            ball.dy = choice([-4,-3,-2, 2,3,4])
+            score_left += 1
+            Point_left.clear()
+            Point_left.write(score_left, font=FONT)
+            if score_left == 7:
+                ball.goto(0, 0)
+                print("Player A win")
+                print("Gameover")
+                break
+            ball.goto(0, randint(-WIDTH/4, WIDTH/4))
 
-window.mainloop()
+turtle.mainloop()
