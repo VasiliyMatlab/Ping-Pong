@@ -31,6 +31,7 @@ window = turtle.Screen()
 window.title("Ping-Pong")
 window.setup(width=1.0, height=0.99)
 window.bgcolor("black")
+window.tracer(1)
 
 # Отрисовка задней части поля
 border = turtle.Turtle()
@@ -145,11 +146,26 @@ while True:
         ball.dy = -ball.dy
     elif ball.ycor() <= (-WIDTH/2 + DIAMETER/2):
         ball.dy = -ball.dy
+    
     # При достижении левой или правой стенки возвращаемся в центр
-    elif (ball.xcor() <= (-LENGTH/2 + DIAMETER/2)) or \
+    if (ball.xcor() <= (-LENGTH/2 + DIAMETER/2)) or \
             (ball.xcor() >= (LENGTH/2 - DIAMETER/2)):
         ball.goto(0, randint(-WIDTH/4, WIDTH/4))
         ball.dx = choice([-4,-3,-2, 2,3,4])
         ball.dy = choice([-4,-3,-2, 2,3,4])
+    
+    # Отражение от левой ракетки
+    if (ball.ycor() >= rocket_left.ycor()-ROCKET_WIDTH/2) and \
+            (ball.ycor() <= rocket_left.ycor()+ROCKET_WIDTH/2) and \
+            (ball.xcor() >= rocket_left.xcor()-ROCKET_LENGTH/2) and \
+            (ball.xcor() <= rocket_left.xcor()+ROCKET_LENGTH/2):
+        ball.dx = - ball.dx
+    
+    # Отражение от правой ракетки
+    if (ball.ycor() >= rocket_right.ycor()-ROCKET_WIDTH/2) and \
+            (ball.ycor() <= rocket_right.ycor()+ROCKET_WIDTH/2) and \
+            (ball.xcor() >= rocket_right.xcor()-ROCKET_LENGTH/2) and \
+            (ball.xcor() <= rocket_right.xcor()+ROCKET_LENGTH/2):
+        ball.dx = - ball.dx
 
 window.mainloop()
